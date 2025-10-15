@@ -1,4 +1,4 @@
-# cubed sphere mesh adaptation procedure 
+# Cubed-sphere mesh adaptation procedure 
 Build a non-singular unstructured mesh, via gmsh, on a sphere
 
 python requirements,
@@ -7,14 +7,13 @@ numpy, scipy, netCDF4, matplotlib, gmsh, meshio
 install first netcdf, with MacOS do
 brew install netcdf
 
-the gmsh.py need gmsh bin installed in the pc PATH, 
-be sure to have downloaded from https://gmsh.info the Software Development Kit (SDK) 
-and to have in the PATH pc variable the gmsh executable
+the gmsh.py needs gmsh bin installed in the PATH environment variable, 
+make sure to have downloaded it from https://gmsh.info the Software Development Kit (SDK) 
+and to have it in the PATH variable.
 
 
 Download world input dem to be processed at,
 http://sgbd.acmad.org:8080/thredds/fileServer/regcminput/SURFACE/GTOPO_DEM_30s.nc
-
 
 
 
@@ -29,6 +28,6 @@ Below the explanation of the input data:
 - delta_min: is the minimum spatial mesh resolution when adapting in the cubed domain
 - delta_max: is the maximum spatial mesh resolution when adapting in the cubed domain
 
-The output mesh is stored in a file name "mesh_final_cube.mesh". This file serves as input to numerical codes that solve the PDE in spherical coordinates by projecting on the Cartesian cubed domain. Refer to (Sadourny 1972, Nair et al. 2015) for an explanation on how transform the continuity equation on the cubical domain.
+The output mesh is stored in a file name "mesh_final_cube.mesh". This file serves as input to numerical codes that solve the PDE in spherical coordinates by projecting on the Cartesian cubed domain. Refer to (Sadourny 1972, Nair et al. 2015) for an explanation on how to transform the continuity equation on the cubical domain.
 While in the file "mesh_final.mesh" it is saved the corresponding mesh in longitude-latitude coordinates.
 
