@@ -14,6 +14,7 @@ and to have it in the PATH variable.
 
 Download world input dem to be processed at,
 http://sgbd.acmad.org:8080/thredds/fileServer/regcminput/SURFACE/GTOPO_DEM_30s.nc
+and make sure to place it in the same directory where it is placed the python file cubedSphere.py
 
 
 
@@ -28,6 +29,7 @@ Below the explanation of the input data:
 - delta_min: is the minimum spatial mesh resolution when adapting in the cubed domain
 - delta_max: is the maximum spatial mesh resolution when adapting in the cubed domain
 
-The output mesh is stored in a file name "mesh_final_cube.mesh". This file serves as input to numerical codes that solve the PDE in spherical coordinates by projecting on the Cartesian cubed domain. Refer to (Sadourny 1972, Nair et al. 2015) for an explanation on how to transform the continuity equation on the cubical domain.
+The output mesh is stored in a file name "mesh_final_cube.mesh". This file serves as input to numerical codes that solve the PDE in spherical coordinates by projecting on the Cartesian cubed domain. 
+Refer to (Sadourny 1972, Nair et al. 2015) for an explanation on how to transform the continuity equation on the cubical domain.
 While in the file "mesh_final.mesh" it is saved the corresponding mesh in longitude-latitude coordinates.
 
