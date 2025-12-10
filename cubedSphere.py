@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import gmsh  
 import meshio
 
-def Sphere2Cube(lon_deg, lat_deg, lat_dem_res, lon_dem_res, idFace, a = 1):
+def Sphere2Cube(lon_deg, lat_deg, lat_dem_res, lon_dem_res, idFace, a=1):
 
     lon = np.radians(lon_deg)
     lat = np.radians(lat_deg)
@@ -16,32 +16,25 @@ def Sphere2Cube(lon_deg, lat_deg, lat_dem_res, lon_dem_res, idFace, a = 1):
     if idFace == 0:
         x = a * np.tan(lon)
         y = a * np.tan(lat) * ( 1. / np.cos(lon) )
-        
     elif idFace == 1:
         x = -a * 1. / np.tan(lon)
         y = a * np.tan(lat) * ( 1. / np.sin(lon) )
-    
     elif idFace == 2:
         x = a * np.tan(lon)
         y = -a * np.tan(lat) * ( 1. / np.cos(lon) )
-    
     elif idFace == 3:
         x = -a * 1. / np.tan(lon)
         y = -a * np.tan(lat) * ( 1. / np.sin(lon) )
-    
     elif idFace == 4:
         mask = np.abs(lat)==np.pi/2.
         x = a * np.sin(lon) * 1. / np.tan(lat)
         y = -a * np.cos(lon) * 1. / np.tan(lat)
-        
         x[mask] = 0.
         y[mask] = 0.
-        
     elif idFace == 5:
         mask = np.abs(lat)==np.pi/2.
         x = -a * np.sin(lon) * 1. / np.tan(lat)
         y = -a * np.cos(lon) * 1. / np.tan(lat)
-         
         x[mask] = 0.
         y[mask] = 0.
     else:
@@ -49,8 +42,6 @@ def Sphere2Cube(lon_deg, lat_deg, lat_dem_res, lon_dem_res, idFace, a = 1):
         sys.exit()
         
     return [x, y]
-    
-
 
 def XYZ2LonLat(X, Y, Z, lon_crop_extent):
 
@@ -70,37 +61,30 @@ def XYZ2LonLat(X, Y, Z, lon_crop_extent):
 
 def Local2Global(x, y, idFace, a = 1):
 
-
     if idFace == 0:
         X = 0*x+a
         Y = x
         Z = y
-        
     elif idFace == 1:
         X = -x
         Y = 0*x+a
         Z = y
-    
     elif idFace == 2:
         X = 0*x-a
         Y = -x
         Z = y
-    
     elif idFace == 3:
         X = x
         Y = 0*x-a
         Z = y
-    
     elif idFace == 4:
         X = -y
         Y = x
         Z = 0*x+a
-        
     elif idFace == 5:
         X = y
         Y = x
         Z = 0*x-a
-         
     else:
         print("Not recognized cube-face Id, STOP!")
         sys.exit()
@@ -112,31 +96,24 @@ def Global2Local(X, Y, Z, idFace, a = 1):
     if idFace == 0:
         x = a*Y/X
         y = a*Z/X
-        
     elif idFace == 1:
         x = -a*X/Y
         y = a*Z/Y
-    
     elif idFace == 2:
         x = a*Y/X
         y = -a*Z/X
-    
     elif idFace == 3:
         x = -a*X/Y
         y = -a*Z/Y
-    
     elif idFace == 4:
         x = a*Y/Z
         y = -a*X/Z
-        
     elif idFace == 5:
         x = -a*Y/Z
         y = -a*X/Z
-         
     else:
         print("Not recognized cube-face Id, STOP!")
-        sys.exit()
-        
+        sys.exit()     
         
     return [x, y]
     
@@ -165,7 +142,7 @@ def inverse_metric_tensor(Localx, Localy, a=1):
     gap21 = -g21/g_det
     gap22 = g11/g_det
     ginv = np.array([[gap11, gap12], [gap21, gap22]])
-    #g = np.array([[g11, g12], [g21, g22]])
+   
     return [g_sqrt, ginv]
 
 def localBasis2Spherical(x, y, lon_crop_extent, idFace, a=1):
@@ -197,6 +174,7 @@ def localBasis2Spherical(x, y, lon_crop_extent, idFace, a=1):
     [t, l] = XYZ2LonLat(X, Y, Z, lon_crop_extent)
 
     A = np.array([[R*lx*np.cos(t), R*tx], [R*ly*np.cos(t), R*ty]])
+
     return [A,lx,ly,tx,ty]
 
 def computeParDer(xx_1, xx_2, xx_3, z_node_triangle, iCubeFace):
@@ -216,11 +194,9 @@ def computeParDer(xx_1, xx_2, xx_3, z_node_triangle, iCubeFace):
     a1 = (y2*(-z0+z1)+y1*(z0-z2)+y0*(-z1+z2))/(x2*(y0-y1)+x0*(y1-y2)+x1*(-y0+y2))
 
     return np.array([a1, a2])
-
-
-
+ 
     
-def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_interp, lon_crop_extent, delta_min=1e-4, delta_max=.05, tau=.1, a=1):
+def compute_H1_seminorm_error(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_interp, lon_crop_extent, a=1):
     
     xyz = nodes[triangles]
     
@@ -228,29 +204,14 @@ def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_int
     
     z_node = oro_interp((lat_interp_node, lon_interp_node), method='linear')
     
-    
-    
-#    plt.plot(lon_interp_node, lat_interp_node, 'o')
-#    plt.axis('equal')
-#    plt.show()
-    
-#    plt.triplot(x_local, y_local, triangles)
-#    plt.tricontourf(x_local, y_local, triangles, z_node)
-
-#    plt.tricontourf(lon_interp_node, lat_interp_node, triangles, z_node)
-#    plt.axis('equal')
-#    plt.colorbar()
-#    plt.show()
-    
-    
+    eta_k = 0
+       
     z_node = z_node[triangles]
     
     xyz_middle = (xyz[:,0,:] + xyz[:,1,:] + xyz[:,2,:])/3.
     lat_interp_middle, lon_interp_middle = XYZ2LonLat(xyz_middle[:,0], xyz_middle[:,1], xyz_middle[:,2], lon_crop_extent)
     d_z_lat_middle = d_z_lat_interp((lat_interp_middle, lon_interp_middle), method='nearest')
     d_z_lon_middle = d_z_lon_interp((lat_interp_middle, lon_interp_middle), method='nearest')
-    
-
     
     N_elements = xyz.shape[0]
     sf = np.zeros(len(nodes))+1e4
@@ -263,7 +224,69 @@ def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_int
         xx_1 = xyz_triangle[0,:]
         xx_2 = xyz_triangle[1,:]
         xx_3 = xyz_triangle[2,:]
-            
+        
+        if (np.allclose(xx_1[0],a) and np.allclose(xx_2[0],a) and np.allclose(xx_3[0],a)):
+            iCubeFace = 0
+        elif (np.allclose(xx_1[1],a) and np.allclose(xx_2[1],a) and np.allclose(xx_3[1],a)):
+            iCubeFace = 1
+        elif (np.allclose(xx_1[0],-a) and np.allclose(xx_2[0],-a) and np.allclose(xx_3[0],-a)):
+            iCubeFace = 2
+        elif (np.allclose(xx_1[1],-a) and np.allclose(xx_2[1],-a) and np.allclose(xx_3[1],-a)):
+            iCubeFace = 3
+        elif (np.allclose(xx_1[2],a) and np.allclose(xx_2[2],a) and np.allclose(xx_3[2],a)):
+            iCubeFace = 4
+        elif (np.allclose(xx_1[2],-a) and np.allclose(xx_2[2],-a) and np.allclose(xx_3[2],-a)):
+            iCubeFace = 5
+        else:
+            print("Not recognized cube-face Id, STOP!")
+            sys.exit()
+
+        measure_tri = .5*np.linalg.norm(np.cross(xx_2 - xx_1, xx_3 - xx_1))
+
+        [Localx, Localy] = Global2Local(xyz_middle[0,0], xyz_middle[0,1], xyz_middle[0,2], iCubeFace)
+        [g_sqrt, ginv] = inverse_metric_tensor(Localx, Localy)
+
+        [A,lx,ly,tx,ty] = localBasis2Spherical(Localx, Localy, lon_crop_extent, iCubeFace)
+        xxl_1 = Global2Local(xx_1[0], xx_1[1], xx_1[2], iCubeFace)
+        xxl_2 = Global2Local(xx_2[0], xx_2[1], xx_2[2], iCubeFace)
+        xxl_3 = Global2Local(xx_3[0], xx_3[1], xx_3[2], iCubeFace)
+        vec_par_der_xy = computeParDer(xxl_1, xxl_2, xxl_3, z_node_triangle, iCubeFace)
+                             
+        left_contr = ginv@(np.array([d_z_lon_middle[iTri]*lx + d_z_lat_middle[iTri]*tx, d_z_lon_middle[iTri]*ly + d_z_lat_middle[iTri]*ty]))@A
+        right_contr = ginv@vec_par_der_xy@A
+
+        eta_k += np.sqrt(np.linalg.norm(left_contr - right_contr)**2*measure_tri*g_sqrt)
+
+    return eta_k
+
+
+def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_interp, lon_crop_extent, delta_min=1e-4, delta_max=.05, tau=.001, a=1):
+    
+    xyz = nodes[triangles]
+    
+    lat_interp_node, lon_interp_node = XYZ2LonLat(nodes[:,0], nodes[:,1], nodes[:,2], lon_crop_extent)
+    
+    z_node = oro_interp((lat_interp_node, lon_interp_node), method='linear')
+    z_node = z_node[triangles]
+
+    eta_k_err = 0
+    
+    xyz_middle = (xyz[:,0,:] + xyz[:,1,:] + xyz[:,2,:])/3.
+    lat_interp_middle, lon_interp_middle = XYZ2LonLat(xyz_middle[:,0], xyz_middle[:,1], xyz_middle[:,2], lon_crop_extent)
+    d_z_lat_middle = d_z_lat_interp((lat_interp_middle, lon_interp_middle), method='nearest')
+    d_z_lon_middle = d_z_lon_interp((lat_interp_middle, lon_interp_middle), method='nearest')
+    
+    N_elements = xyz.shape[0]
+    sf = np.zeros(len(nodes))+1e4
+    
+    iCubeFace = -1
+    for iTri in range(xyz.shape[0]):
+        xyz_triangle = xyz[iTri]
+        z_node_triangle = z_node[iTri]
+
+        xx_1 = xyz_triangle[0,:]
+        xx_2 = xyz_triangle[1,:]
+        xx_3 = xyz_triangle[2,:]
         
         if (np.allclose(xx_1[0],a) and np.allclose(xx_2[0],a) and np.allclose(xx_3[0],a)):
             iCubeFace = 0
@@ -296,11 +319,12 @@ def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_int
         right_contr = ginv@vec_par_der_xy@A
 
         eta_k = np.sqrt(np.linalg.norm(left_contr - right_contr)**2*measure_tri*g_sqrt)
+        eta_k_err += eta_k
 
         candidate = tau*np.sqrt(measure_tri/N_elements/.5)/(eta_k+1.e-8)
         
         for iPoi in range(3):
-            sf[triangles[iTri][iPoi]] = np.minimum(sf[triangles[iTri][iPoi]], np.maximum(np.minimum(candidate, delta_max), delta_min)) #np.maximum(np.minimum(candidate, starting_mesh_size*4), starting_mesh_size/2) #np.maximum(np.minimum(candidate, starting_mesh_size*2), starting_mesh_size/2)
+            sf[triangles[iTri][iPoi]] = np.minimum(sf[triangles[iTri][iPoi]], np.maximum(np.minimum(candidate, delta_max), delta_min)) 
     
     for i in range(len(sf)):
         if sf[i]==1e4:
@@ -310,7 +334,7 @@ def compute_size_field(nodes, triangles, oro_interp, d_z_lat_interp, d_z_lon_int
             index_c = np.ma.argmin(b)
             sf[i] = sf[index_c]
 
-    return sf 
+    return [sf, eta_k_err] 
     
 
 def GetId(LatOrLonDEM, LatOrLonExtent, LatLon_dem_res):
@@ -326,16 +350,14 @@ class Mesh:
         self.triangles_tags, evtags = gmsh.model.mesh.getElementsByType(2)
         evid = np.array([vmap[j] for j in evtags])
         self.triangles = evid.reshape((self.triangles_tags.shape[-1], -1))
-
-
             
 
 ###################################
 ## Inputs
-## Longitude coordinates of the desired slice of the orography  [-180, 180)
-lon_crop_extent = [30, 50]
-## Latitude coordinates of the desired slice of the orography [-90, 90]
-lat_crop_extent = [30, 40]
+## Longitude coordinates of the desired slice of the topography  [-180, 180)
+lon_crop_extent = [-100, -70] #[30, 50]
+## Latitude coordinates of the desired slice of the topography [-90, 90]
+lat_crop_extent = [60, 90] #[30, 40]
 
 earth_radius = 6.371e6
 
@@ -344,11 +366,10 @@ MeshAlgorithm = 5 # Gmsh meshing algorithm, prefer to use MeshAdapt
 # baseline mesh size
 starting_mesh_size = 1e-3
 
+# these quantities are adimensional 
 delta_min = 1e-3
 delta_max = .01 # coarsest mesh resolution
 ###################################
-
-
 
 
 ## read orography file
@@ -357,21 +378,13 @@ lon_dem =  DEM.variables['lon'][:]
 lat_dem =  DEM.variables['lat'][:]
 z_dem   =  DEM.variables['z'][:][:]
 
-
-
-
 # intial data resolution (0.0083333333333 deg)
-lon_dem_res = (lon_dem[-1] - lon_dem[0]) / np.size(lon_dem) # fine res.
+lon_dem_res = (lon_dem[-1] - lon_dem[0]) / np.size(lon_dem) 
 lat_dem_res = (lat_dem[-1] - lat_dem[0]) / np.size(lat_dem)
-
-
-
 
 # compute matrix index of the slice
 lon_id = [GetId(lon_dem[ 0 ], lon_crop_extent[ 0 ], lon_dem_res), GetId(lon_dem[ 0 ], lon_crop_extent[ 1 ], lon_dem_res)]
 lat_id = [GetId(lat_dem[ 0 ], lat_crop_extent[ 0 ], lat_dem_res), GetId(lat_dem[ 0 ], lat_crop_extent[ 1 ], lat_dem_res)]
-
-
 
 # load desired slices
 print("Loading data...")
@@ -382,16 +395,8 @@ z_slice   = z_dem[  lat_id[0]: lat_id[1], \
 print("Data loaded")
 DEM.close()
 
-# z_slice.shape, lon_slice.shape, lat_slice.shape
-
-
-# divide z, lon_slice, lat_slice in at max 6 slices, 6 cube faces
-# following paper nair_et_al_2005
-
 #
 tri = [[] for _ in range(6)]
-
-
 
 isFaceP1 = False
 isFaceP2 = False
@@ -403,7 +408,7 @@ isFaceP6 = False
 
 lat_slice = lat_slice.data
 lon_slice = lon_slice.data
-z_slice   = z_slice.data/earth_radius*np.sqrt(3)
+z_slice   = z_slice.data/earth_radius*np.sqrt(3) # get adimensional topography
 
 if (lon_slice[0] > lon_slice[-1]): # non ascending order, pb with RegularGridInterpolator
     lon_slice[lon_slice >= lon_slice[0]] -= 360.
@@ -412,11 +417,10 @@ LON, LAT = np.meshgrid(lon_slice, lat_slice)
 
 plt.contourf(LON, LAT, z_slice)
 plt.axis('equal')
-plt.xlabel('longitude')
-plt.ylabel('latitude')
+plt.xlabel('longitude (deg)')
+plt.ylabel('latitude (deg)')
 plt.colorbar()
 plt.show()
-
 
 # structured grid, faster than stadard scipy interpolation
 z_mesh_fem = interpolate.RegularGridInterpolator((lat_slice, lon_slice), z_slice, fill_value=None, bounds_error=False, method='linear')
@@ -424,18 +428,12 @@ d_z_lat, d_z_lon = computeGrad_spherical(z_slice, lat_dem_res, lon_dem_res, LON,
 d_z_lat_fem = interpolate.RegularGridInterpolator((lat_slice, lon_slice), d_z_lat, fill_value=None, bounds_error=False, method='nearest')
 d_z_lon_fem = interpolate.RegularGridInterpolator((lat_slice, lon_slice), d_z_lon, fill_value=None, bounds_error=False, method='nearest')
 
-
-
 plt.contourf(LON, LAT, np.arctan(np.sqrt(d_z_lat**2 + d_z_lon**2))*180/np.pi)
 plt.axis('equal')
-plt.xlabel('longitude')
-plt.ylabel('latitude')
+plt.xlabel('longitude (deg)')
+plt.ylabel('latitude (deg)')
 plt.colorbar()
 plt.show()
-
-
-
-
 
 # add vertex/intersections
 Nl = 100
@@ -586,12 +584,9 @@ lat_slice_mod = np.unique(lat_slice_mod)
 
 LON_mod, LAT_mod = np.meshgrid(lon_slice_mod, lat_slice_mod)
 
-
 mask_crop_boundary = LON_mod==LON_mod
 mask_crop_boundary = mask_crop_boundary.astype(int) - ndimage.binary_erosion(mask_crop_boundary.astype(int))
 mask_crop_boundary = mask_crop_boundary.astype(bool)
-
-
 
 
 mask_crop_boundary_mod = mask_crop_boundary.astype(int)
@@ -627,8 +622,6 @@ mask_crop_boundary_mod[np.abs(LAT_mod-np.arctan( np.cos(LON_mod*np.pi/180.))*180
 mask_crop_boundary_mod[np.abs(LAT_mod-np.arctan(-np.sin(LON_mod*np.pi/180.))*180./np.pi)<toll] += 1
 mask_crop_boundary_mod[np.abs(LAT_mod-np.arctan( np.sin(LON_mod*np.pi/180.))*180./np.pi)<toll] += 1
 
-#mask_crop_boundary_mod[np.abs(LON_mod-45)<toll] += 1
-
 
 mask_crop_boundary_mod[0 , 0] += 1
 mask_crop_boundary_mod[-1, 0] += 1
@@ -637,25 +630,17 @@ mask_crop_boundary_mod[-1,-1] += 1
 
 plt.plot(LON_mod[mask_crop_boundary_mod>0], LAT_mod[mask_crop_boundary_mod>0], 'o')
 plt.axis('equal')
-plt.xlabel('longitude')
-plt.ylabel('latitude')
+plt.xlabel('longitude (deg)')
+plt.ylabel('latitude (deg)')
 plt.show()
-
 
 mask_crop_boundary_mod = mask_crop_boundary_mod>1
 
-
 plt.plot(LON_mod[mask_crop_boundary_mod], LAT_mod[mask_crop_boundary_mod], 'o')
 plt.axis('equal')
-plt.xlabel('longitude')
-plt.ylabel('latitude')
+plt.xlabel('longitude (deg)')
+plt.ylabel('latitude (deg)')
 plt.show()
-
-
-
-    
-
-
 
 mask = np.logical_and(np.abs(LAT)<np.arctan(np.cos(LON*np.pi/180.))*180./np.pi, np.cos(LON*np.pi/180)>1./np.sqrt(2.))
 if (LAT[mask].size!=0 and LON[mask].size!=0):
@@ -663,26 +648,19 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     
     print("isFaceP1 ", isFaceP1)
     
-    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, np.cos(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
+    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                             np.cos(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
-    
-    
-#    plt.plot(LON[mask], LAT[mask], 'o')
-#    plt.axis('equal')
-#    plt.show()
     
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
     plt.show()
     
-    
-    
     points = []
     for ii in range(LON_mod[mask_crop_boundary_p].size):
         p1 = [LON_mod[mask_crop_boundary_p][ii], LAT_mod[mask_crop_boundary_p][ii]]
         points.append( p1 )
-    
     
     tri[0] = Delaunay(points)
     
@@ -698,35 +676,26 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     
     print("isFaceP2 ", isFaceP2)
     
-    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
+    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                             np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
-    
-
-#    plt.plot(LON[mask], LAT[mask], 'o')
-#    plt.axis('equal')
-#    plt.show()
     
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
     plt.show()
-    
     
     points  = []
     for ii in range(LON_mod[mask_crop_boundary_p].size):
         p1 = [LON_mod[mask_crop_boundary_p][ii], LAT_mod[mask_crop_boundary_p][ii]]
         points.append( p1 )
         
-    
     tri[1] = Delaunay(points)
-        
     
-
     plt.triplot(tri[1].points[:,0], tri[1].points[:,1], tri[1].simplices)
     plt.plot(tri[1].points[:,0], tri[1].points[:,1], 'o')
     plt.axis('equal')
     plt.show()
-    
     
     
 mask = np.logical_and(np.abs(LAT)<-np.arctan(np.cos(LON*np.pi/180.))*180./np.pi, np.cos(LON*np.pi/180)<-1./np.sqrt(2.))
@@ -735,27 +704,20 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     
     print("isFaceP3 ", isFaceP3)
     
-    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<-np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
+    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<-np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                             np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
-    
-    
-#    plt.plot(LON[mask], LAT[mask], 'o')
-#    plt.axis('equal')
-#    plt.show()
 
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
     plt.show()
-    
-    
     
     points  = []
     for ii in range(LON_mod[mask_crop_boundary_p].size):
         p1 = [LON_mod[mask_crop_boundary_p][ii], LAT_mod[mask_crop_boundary_p][ii]]
         points.append( p1 )
             
-  
     tri[2] = Delaunay(points)
 
     plt.triplot(tri[2].points[:,0], tri[2].points[:,1], tri[2].simplices)
@@ -770,16 +732,14 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     
     print("isFaceP4 ", isFaceP4)
     
-    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<-np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
+    bool_val = np.logical_not(np.logical_and(np.abs(LAT_mod)<-np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                             np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
     
-    
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
-    plt.show()
-    
-    
+    plt.show()   
     
     points  = []
     for ii in range(LON_mod[mask_crop_boundary_p].size):
@@ -804,15 +764,16 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     print("isFaceP5 ", isFaceP5)
     
     bool_val = np.logical_and(LAT_mod>np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi-toll, np.cos(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll)
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi-toll, np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(-np.cos(LON_mod*np.pi/180.))*180./np.pi-toll, np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(-np.sin(LON_mod*np.pi/180.))*180./np.pi-toll, np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
-
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi-toll, 
+                                                      np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(-np.cos(LON_mod*np.pi/180.))*180./np.pi-toll, 
+                                                      np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod>np.arctan(-np.sin(LON_mod*np.pi/180.))*180./np.pi-toll, 
+                                                      np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
 
     bool_val = np.logical_not(bool_val)
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
-    
     
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
@@ -821,8 +782,7 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     points  = []
     for ii in range(LON_mod[mask_crop_boundary_p].size):
         p1 = [LON_mod[mask_crop_boundary_p][ii], LAT_mod[mask_crop_boundary_p][ii]]
-        points.append( p1 )
-        
+        points.append( p1 )       
         
     tri[4] = Delaunay(points)
 
@@ -841,21 +801,20 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     isFaceP6 = True
 
     print("isFaceP6 ", isFaceP6)
-
     
-    bool_val = np.logical_and(LAT_mod<np.arctan(-np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, np.cos(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll)
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(-np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
-    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
+    bool_val = np.logical_and(LAT_mod<np.arctan(-np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                              np.cos(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll)
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(-np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                                      np.sin(LON_mod*np.pi/180)>1./np.sqrt(2.)-toll))
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(np.cos(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                                      np.cos(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
+    bool_val = np.logical_or(bool_val, np.logical_and(LAT_mod<np.arctan(np.sin(LON_mod*np.pi/180.))*180./np.pi+toll, 
+                                                      np.sin(LON_mod*np.pi/180)<-1./np.sqrt(2.)+toll))
     
 
     bool_val = np.logical_not(bool_val)
     mask_crop_boundary_p = mask_crop_boundary_mod.astype(bool)
     mask_crop_boundary_p[bool_val] = False
-    
-#    plt.plot(LON[mask], LAT[mask], 'o')
-#    plt.axis('equal')
-#    plt.show()
     
     plt.plot(LON_mod[mask_crop_boundary_p], LAT_mod[mask_crop_boundary_p], 'o')
     plt.axis('equal')
@@ -875,9 +834,6 @@ if (LAT[mask].size!=0 and LON[mask].size!=0):
     plt.show()
 
 
-
-
-
 isFace_vect = [isFaceP1, isFaceP2, isFaceP3, isFaceP4, isFaceP5, isFaceP6]
 
 
@@ -886,8 +842,8 @@ for i in range(6):
         plt.triplot(tri[i].points[:,0], tri[i].points[:,1], tri[i].simplices)
         plt.plot(tri[i].points[:,0], tri[i].points[:,1], 'o')
 
-plt.xlabel('longitude')
-plt.ylabel('latitude')
+plt.xlabel('longitude (deg)')
+plt.ylabel('latitude (deg)')
 plt.axis('equal')
 plt.show()
 
@@ -914,20 +870,16 @@ iSurf = 1
 current_e = 1
 for ii in range(6):
     if isFace_vect[ ii ]:
-    
 
         eList_surf = []
         for jj in range(tri[ii].simplices.shape[0]):
         
-            
             poi = tri[ii].points[tri[ii].simplices][jj]
-            
             
             eList = []
             for iVert in range(3):
                 p1 = poi[iVert-1]
                 p2 = poi[iVert  ]
-            
                 
                 bool_val1 = True
                 bool_val2 = True
@@ -936,7 +888,6 @@ for ii in range(6):
                         bool_val1 = False
                     if (np.allclose([p2, p1],point)):
                         bool_val2 = False
-                
                 
                 if (bool_val1 and bool_val2):
                     
@@ -949,9 +900,6 @@ for ii in range(6):
                         
                     XX, YY = Sphere2Cube(p1_vect, p2_vect, lat_dem_res, lon_dem_res, ii)
                     X_gl, Y_gl, Z_gl = Local2Global(XX, YY, ii)
-                    
-                    
-                    
             
                     pList = []
                     for kk in range(np.size(X_gl)):
@@ -965,7 +913,6 @@ for ii in range(6):
                         else:
                             pList.append(candidate.index(True)+1)
                     
-                    
                     if (np.size(pList)>2):
                         gmsh.model.geo.addSpline(pList, tag=current_e)
                     else:
@@ -976,19 +923,14 @@ for ii in range(6):
                     
                     eList.append(current_e)
                     
-                    
                     pointVertex_globalList.append( [p1, p2] )
                     pointVertex_globalList.append( [p2, p1] )
                     
                     current_e += 1
-                    
-                    
                 else:
-                    
                     candidate = [np.allclose([p1, p2],point) for point in pointVertex_globalList].index(True)
                     eList.append(e_globalList[candidate])
-            
-            
+                        
             
             is_entered = False
             for ee in eList:
@@ -999,7 +941,6 @@ for ii in range(6):
                             eList_surf.append(-ee_int)
                         else:
                             eList_surf.remove(ee_int)
-                        
                     break
                     
                 if (-ee in eList_surf):
@@ -1009,15 +950,11 @@ for ii in range(6):
                             eList_surf.append(ee_int)
                         else:
                             eList_surf.remove(-ee_int)
-                            
                     break
 
-            
             if (not is_entered):
                 for ee_int in eList:
                     eList_surf.append(ee_int)
-                    
-            
         
         for ee in eList_surf:
             if (np.abs(ee) not in eList_full):
@@ -1027,8 +964,6 @@ for ii in range(6):
         gmsh.model.geo.addPlaneSurface([iLoop], iSurf)
         iLoop += 1
         iSurf += 1
-            
-        
         
 
 gmsh.model.geo.synchronize()
@@ -1045,22 +980,20 @@ nodes_coords = np.reshape(gmsh.model.mesh.getNodesForPhysicalGroup(1,1)[1],(-1,3
 nodes_ids    = gmsh.model.mesh.getNodesForPhysicalGroup(1,1)[0]
 
 
-
-
-sf_ele = compute_size_field(mesh.vxyz, mesh.triangles, z_mesh_fem, d_z_lat_fem, d_z_lon_fem, lon_crop_extent, delta_min, delta_max)
+[sf_ele, act_err] = compute_size_field(mesh.vxyz, mesh.triangles, z_mesh_fem, d_z_lat_fem, d_z_lon_fem, lon_crop_extent, delta_min, delta_max)
 sf_node = nodes_ids/nodes_ids*starting_mesh_size
 
-#sf_tot = np.concatenate((sf_ele, sf_node))
-#tags_tot = np.concatenate((mesh.vtags, nodes_ids))
 sf_tot = sf_ele
 tags_tot = mesh.vtags
             
-sf_view = gmsh.view.add("mesh size field") # ElementNodeData
-#gmsh.view.addModelData(sf_view, 0, current_model, "ElementNodeData", mesh.triangles_tags, sf_ele[:, None])
-#gmsh.view.addModelData(sf_view, 0, current_model, "ElementData", mesh.triangles_tags, sf_ele[:, None])
+sf_view = gmsh.view.add("mesh size field") 
 gmsh.view.addModelData(sf_view, 0, current_model, "NodeData", tags_tot, sf_tot[:,None])
 gmsh.view.write(sf_view, "sf.pos")
 
+# Compute actual H1-seminorm error
+#act_err = compute_H1_seminorm_error(mesh.vxyz, mesh.triangles, z_mesh_fem, d_z_lat_fem, d_z_lon_fem, lon_crop_extent, delta_min, delta_max)
+
+print("actual H1-seminorm error , ", act_err)
 
 # Force gmsh to use just the background mesh provided
 gmsh.option.setNumber("Mesh.CharacteristicLengthExtendFromBoundary", 0)
@@ -1082,19 +1015,15 @@ current_e = 1
 for ii in range(6):
     if isFace_vect[ ii ]:
     
-
         eList_surf = []
         for jj in range(tri[ii].simplices.shape[0]):
-        
             
             poi = tri[ii].points[tri[ii].simplices][jj]
-            
             
             eList = []
             for iVert in range(3):
                 p1 = poi[iVert-1]
-                p2 = poi[iVert  ]
-            
+                p2 = poi[iVert  ]        
                 
                 bool_val1 = True
                 bool_val2 = True
@@ -1103,7 +1032,6 @@ for ii in range(6):
                         bool_val1 = False
                     if (np.allclose([p2, p1],point)):
                         bool_val2 = False
-                
                 
                 if (bool_val1 and bool_val2):
                     
@@ -1116,9 +1044,6 @@ for ii in range(6):
                         
                     XX, YY = Sphere2Cube(p1_vect, p2_vect, lat_dem_res, lon_dem_res, ii)
                     X_gl, Y_gl, Z_gl = Local2Global(XX, YY, ii)
-                    
-                    
-                    
             
                     pList = []
                     for kk in range(np.size(X_gl)):
@@ -1147,10 +1072,7 @@ for ii in range(6):
                     pointVertex_globalList.append( [p2, p1] )
                     
                     current_e += 1
-                    
-                    
                 else:
-                    
                     candidate = [np.allclose([p1, p2],point) for point in pointVertex_globalList].index(True)
                     eList.append(e_globalList[candidate])
                     
@@ -1164,7 +1086,6 @@ for ii in range(6):
                             eList_surf.append(-ee_int)
                         else:
                             eList_surf.remove(ee_int)
-                        
                     break
                     
                 if (-ee in eList_surf):
@@ -1174,9 +1095,7 @@ for ii in range(6):
                             eList_surf.append(ee_int)
                         else:
                             eList_surf.remove(-ee_int)
-                            
                     break
-
             
             if (not is_entered):
                 for ee_int in eList:
@@ -1197,6 +1116,11 @@ gmsh.model.mesh.field.setAsBackgroundMesh(bg_field)
 gmsh.model.mesh.generate(2)
 gmsh.write("mesh_final_cube.mesh")
 
+mesh = Mesh()
+
+# Compute actual H1-seminorm error
+act_err = compute_H1_seminorm_error(mesh.vxyz, mesh.triangles, z_mesh_fem, d_z_lat_fem, d_z_lon_fem, lon_crop_extent)
+print("actual H1-seminorm error , ", act_err)
 
 
 mesh_io = meshio.read("mesh_final_cube.mesh")
@@ -1211,14 +1135,5 @@ meshio.write("mesh_final.mesh", mesh_io)
 
 
 gmsh.finalize()
-
-
-
-
-
-
-
-
-
 
 
