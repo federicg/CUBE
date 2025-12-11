@@ -18,7 +18,7 @@ and make sure to place it in the same directory where it is placed the python fi
 
 
 
-Apart from the DEM, the input data to the code must be specified between lines 333-349.
+Apart from the DEM, the input data to the code must be specified between lines 526-543.
 Below the explanation of the input data:
 - lon_crop_extent: extent in the longitude spherical coordinate
 - lat_crop_extent: extent in the latitude spherical coordinate
